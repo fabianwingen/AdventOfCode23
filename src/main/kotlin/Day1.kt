@@ -7,14 +7,14 @@ fun main() {
     part2(file)
 }
 
-fun part1(file: File) {
+private fun part1(file: File) {
     var summe = 0
     file.forEachLine { line ->
         summe += getDigits(line)
     }
     println("Part1: " +summe)
 }
-fun getDigits(line: String): Int {
+private fun getDigits(line: String): Int {
     var chars: String = ""
     for (c in line) {
         if ( c.isDigit()) {
@@ -25,14 +25,14 @@ fun getDigits(line: String): Int {
     return number.toInt()
 
 }
-fun part2(file: File) {
+private fun part2(file: File) {
     var summe = 0
     file.forEachLine { line ->
         summe += getSum(line)
     }
     print("Part2: " + summe)
 }
-fun getSum(line: String): Int {
+private fun getSum(line: String): Int {
     val textToDigit = mapOf(
         "one" to "1", "two" to "2", "three" to "3", "four" to "4", "five" to "5", "six" to "6",
         "seven" to "7", "eight" to "8", "nine" to "9", "1" to "1", "2" to "2", "3" to "3",
