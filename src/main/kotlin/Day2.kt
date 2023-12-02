@@ -8,7 +8,8 @@ fun main() {
     file.forEachLine { line ->
         listOfCubes.add(parseLineToListOfMaps(line))
     }
-    part1(listOfCubes)
+    println("Part1: " + part1(listOfCubes))
+    println("Part2: " + part2(listOfCubes))
 }
 
 fun parseLineToListOfMaps(line:String ): List<Map<String,Int>> {
@@ -24,7 +25,7 @@ fun parseLineToListOfMaps(line:String ): List<Map<String,Int>> {
 }
 
 
-fun part1(list: MutableList<List<Map<String, Int>>>) {
+fun part1(list: MutableList<List<Map<String, Int>>>): Int {
     val redLimit = 12
     val greenLimit = 13
     val blueLimit = 14
@@ -39,14 +40,13 @@ fun part1(list: MutableList<List<Map<String, Int>>>) {
                 it.value.get("green")!! <= greenLimit }
         .map { it.key }
         .sum()
-
-    println(toList)
-
+    return toList
 }
 
 fun flatMap(pair: Pair<List<Map<String,Int>>,Int>): Map<Int, Map<String, Int>> {
     val list = pair.first
     var maxRed = 0
+
     var maxGreen = 0
     var maxBlue = 0
     list.forEach {
@@ -59,4 +59,16 @@ fun flatMap(pair: Pair<List<Map<String,Int>>,Int>): Map<Int, Map<String, Int>> {
     }
     val map = mapOf("red" to maxRed,"blue" to maxBlue, "green" to maxGreen)
     return mapOf(pair.second +1 to map)
+}
+
+fun part2(list: MutableList<List<Map<String, Int>>>): Int {
+    val toList = list.stream()
+        .collect(Collectors.toList())
+        .map { it to list.indexOf(it) }
+        .map { flatMap(it)}
+        .flatMap { it.entries }
+        .map { it.value}
+        .map {it.values.reduce {a,b -> a*b}}
+        .sum()
+    return toList;
 }
