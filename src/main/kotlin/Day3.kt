@@ -13,20 +13,20 @@ private fun part1(file: File): Int {
     var summe = 0;
     lines.forEach {
         var number = ""
-        var valid = false
+        var numberHasSymbolAdjacent = false
         for (i in it.indices) {
             if (it[i].isDigit()) {
                 number += it[i]
-                if (!valid) valid = symbolAdjacent(lines, lines.indexOf(it), i)
+                if (!numberHasSymbolAdjacent) numberHasSymbolAdjacent = symbolAdjacent(lines, lines.indexOf(it), i)
             } else {
-                if (valid) {
+                if (numberHasSymbolAdjacent) {
                     summe += number.toInt()
-                    valid = false
+                    numberHasSymbolAdjacent = false
                 }
                 number = ""
             }
         }
-        if (valid) { //in case number ends on the right border
+        if (numberHasSymbolAdjacent) { //in case number ends on the right border
             summe += number.toInt()
         }
     }
@@ -35,18 +35,16 @@ private fun part1(file: File): Int {
 
 private fun getSurroundingFields(lines: List<String>, x:Int, y:Int): List<Char> {
 
-    val topLeft = lines.getOrElse(y-1){"."}.getOrElse(x-1) {'.'}
-    val topMiddle = lines.getOrElse(y-1){"."}.getOrElse(x){'.'}
-    val topRight = lines.getOrElse(y-1){"."}.getOrElse(x+1){'.'}
-    val left = lines.getOrElse(y){"."}.getOrElse(x-1){'.'}
-    val right = lines.getOrElse(y){"."}.getOrElse(x+1){'.'}
-    val bottomLeft = lines.getOrElse(y+1){"."}.getOrElse(x-1){'.'}
-    val bottomMiddle = lines.getOrElse(y+1){"."}.getOrElse(x){'.'}
-    val bottomRight = lines.getOrElse(y+1){"."}.getOrElse(x+1){'.'}
-
-    return listOf(topLeft,topMiddle,topRight,right,left,bottomLeft,bottomMiddle,bottomRight)
-
+    val listOfAdjacentChars = mutableListOf<Char>()
+    for (xIndex in x-1..x+1) {
+        for (yIndex in y-1..y+1) {
+            listOfAdjacentChars.add(lines.getOrElse(yIndex){"."}.getOrElse(xIndex) {'.'})
+        }
+    }
+    return listOfAdjacentChars
 }
+data class Coordinates(val x:Int, val y:Int)
+
 private fun symbolAdjacent(lines: List<String>, y: Int, x: Int): Boolean {
    val listOfFields = getSurroundingFields(lines, x, y)
     var valid = false
@@ -57,9 +55,12 @@ private fun symbolAdjacent(lines: List<String>, y: Int, x: Int): Boolean {
     }
     return valid
 }
-data class Coordinates(val x:Int, val y:Int)
-private fun findAStar(lines: List<String>, x:Int, y:Int, length:Int): Coordinates? {
-    for (l in 0..length-1) {
+
+private fun findAStar(lines: List<String>, entry: Map.Entry<Coordinates, Int>): Coordinates? {
+    val x = entry.key.x
+    val y = entry.key.y
+    val length = entry.value.toString().length
+    for (l in 0 until length) {
         for (xIndex in x + l - 1..x + 1 + l) {
             for (yIndex in y - 1..y + 1) {
                 val symbol = lines.getOrElse(yIndex) { "." }.getOrElse(xIndex) { '.' }
@@ -69,23 +70,6 @@ private fun findAStar(lines: List<String>, x:Int, y:Int, length:Int): Coordinate
     }
     return null
 }
-private fun part2(file: File): Int {
-    val lines = file.readLines()
-    val mapCoordinatesToNumbers = mapCoordinatesToNumbers(file)
-    val mapFromCoordsOfNumberToStar = mapCoordinatesToNumbers.asSequence()
-        .filter { findAStar(lines, it.key.x, it.key.y,it.value.toString().length) != null }
-        .map { it to findAStar(lines, it.key.x, it.key.y, it.value.toString().length) }
-        .toMap()
-    val mapFromStarToNumbers = mapFromCoordsOfNumberToStar.asSequence().groupBy(keySelector = { it.value },
-        valueTransform = { it.key })
-        .filter { it.value.size >= 2 }
-        .map { it.key to it.value.map { entry -> entry.value }}
-        .map { it.first to it.second.reduce(){a,b -> a*b} }
-        .map { it.second }
-        .sum()
-    return mapFromStarToNumbers
-}
-
 
 private fun mapCoordinatesToNumbers(file: File): Map<Coordinates, Int> {
     val lines = file.readLines()
@@ -99,3 +83,23 @@ private fun mapCoordinatesToNumbers(file: File): Map<Coordinates, Int> {
     }
     return numbers
 }
+
+private fun part2(file: File): Int {
+    val lines = file.readLines()
+    val mapCoordinatesToNumbers = mapCoordinatesToNumbers(file)
+    val mapFromCoordsOfNumberToStar = mapCoordinatesToNumbers.asSequence()
+        .filter { findAStar(lines, it) != null }
+        .map { it to findAStar(lines, it) }
+        .toMap()
+
+    val mapFromStarToNumbers = mapFromCoordsOfNumberToStar.asSequence().groupBy(keySelector = { it.value },
+        valueTransform = { it.key })
+        .filter { it.value.size >= 2 }
+        .map { it.key to it.value.map { entry -> entry.value }}
+        .map { it.first to it.second.reduce(){a,b -> a*b} }
+        .map { it.second }
+        .sum()
+    return mapFromStarToNumbers
+}
+
+
