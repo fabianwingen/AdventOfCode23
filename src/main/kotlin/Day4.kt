@@ -34,14 +34,12 @@ private fun part2(winningNumbers: List<Set<Int>>, myNumbers: List<Set<Int>>): In
     for (i in 1..winningNumbers.size) {
         games[i] = 1
     }
-
     val winningAmounts = myNumbers.mapIndexed { index, subset ->
         subset.asSequence()
             .filter { winningNumbers[index].contains(it) }
             .toList()
             .size
     }
-
     winningAmounts.forEachIndexed() {
         index, number ->
         for (j in 1..games[index+1]!!) {
