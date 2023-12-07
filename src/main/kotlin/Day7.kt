@@ -38,10 +38,8 @@ private data class Hand(val hand: String, val part: Int): Comparable<Hand> {
 
 }
 
-
-private fun String.getType(): Int {
-    val appearancesOfChars = this.groupingBy { it }.eachCount().values.sorted().reversed()
-    return when (appearancesOfChars) { //Fehler
+private fun typeStrength(appearancesOfSameChars: List<Int>): Int {
+    return when (appearancesOfSameChars) { //Fehler
         listOf(5) -> 7
         listOf(4,1) -> 6
         listOf(3,2) -> 5
@@ -53,9 +51,16 @@ private fun String.getType(): Int {
     }
 }
 
-private fun String.getType2(): Int {
-    return "AKQJT98765432".map { this.replace('J',it).getType() }.max()
+private fun String.mapCharToAppearance(): List<Int> {
+    return this.groupingBy { it }.eachCount().values.sorted().reversed()
+}
 
+private fun String.getType(): Int {
+    return typeStrength(this.mapCharToAppearance())
+}
+
+private fun String.getType2(): Int {
+    return "AKQJT98765432".map { typeStrength(this.replace('J',it).mapCharToAppearance()) }.max()
 }
 
 
